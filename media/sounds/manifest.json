@@ -1,0 +1,10 @@
+{
+  "files": [
+    "move.wav",
+    "capture.wav",
+    "check.wav",
+    "gameover.wav",
+    "castle.wav",
+    "promote.wav"
+  ]
+}

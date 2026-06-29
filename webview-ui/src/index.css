@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.pill {
+  @apply rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white/85 transition hover:bg-white/10;
+}
+
+.button-primary {
+  @apply rounded-2xl bg-[#81B64C] px-4 py-2 text-sm font-semibold text-[#1D2414] transition hover:brightness-105;
+}

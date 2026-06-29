@@ -1,0 +1,221 @@
+{
+  "name": "chess-vscode",
+  "displayName": "Chess.com for VS Code",
+  "description": "Play and analyze chess directly inside VS Code with an offline-first Chess.com-inspired experience.",
+  "version": "0.1.0",
+  "publisher": "junai",
+  "license": "MIT",
+  "private": true,
+  "workspaces": [
+    "webview-ui"
+  ],
+  "engines": {
+    "vscode": "^1.92.0"
+  },
+  "categories": [
+    "Other",
+    "Education"
+  ],
+  "activationEvents": [
+    "onCommand:chess.openBoard",
+    "onCommand:chess.newGame",
+    "onCommand:chess.flipBoard",
+    "onCommand:chess.undo",
+    "onCommand:chess.redo",
+    "onCommand:chess.analyze",
+    "onCommand:chess.exportPGN",
+    "onCommand:chess.importPGN",
+    "onCommand:chess.copyFEN",
+    "onCommand:chess.pasteFEN",
+    "onCommand:chess.openSettings",
+    "onCommand:chess.resumeGame",
+    "onCommand:chess.openAnalysisBoard",
+    "onView:chess.activity"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "chess.openBoard",
+        "title": "Chess: Open Board",
+        "category": "Chess"
+      },
+      {
+        "command": "chess.newGame",
+        "title": "Chess: New Game",
+        "category": "Chess"
+      },
+      {
+        "command": "chess.flipBoard",
+        "title": "Chess: Flip Board",
+        "category": "Chess"
+      },
+      {
+        "command": "chess.undo",
+        "title": "Chess: Undo Move",
+        "category": "Chess"
+      },
+      {
+        "command": "chess.redo",
+        "title": "Chess: Redo Move",
+        "category": "Chess"
+      },
+      {
+        "command": "chess.analyze",
+        "title": "Chess: Analyze Position",
+        "category": "Chess"
+      },
+      {
+        "command": "chess.exportPGN",
+        "title": "Chess: Export PGN",
+        "category": "Chess"
+      },
+      {
+        "command": "chess.importPGN",
+        "title": "Chess: Import PGN",
+        "category": "Chess"
+      },
+      {
+        "command": "chess.copyFEN",
+        "title": "Chess: Copy FEN",
+        "category": "Chess"
+      },
+      {
+        "command": "chess.pasteFEN",
+        "title": "Chess: Paste FEN",
+        "category": "Chess"
+      },
+      {
+        "command": "chess.openSettings",
+        "title": "Chess: Open Settings",
+        "category": "Chess"
+      },
+      {
+        "command": "chess.resumeGame",
+        "title": "Chess: Resume Game",
+        "category": "Chess"
+      },
+      {
+        "command": "chess.openAnalysisBoard",
+        "title": "Chess: Open Analysis Board",
+        "category": "Chess"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "chess.newGame",
+        "key": "ctrl+n",
+        "mac": "cmd+n",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "chess.undo",
+        "key": "ctrl+z",
+        "mac": "cmd+z",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "chess.redo",
+        "key": "ctrl+y",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "chess.flipBoard",
+        "key": "ctrl+f",
+        "mac": "cmd+f",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "chess.resumeGame",
+        "key": "ctrl+s",
+        "mac": "cmd+s",
+        "when": "editorTextFocus"
+      }
+    ],
+    "configuration": {
+      "title": "Chess.com for VS Code",
+      "properties": {
+        "chess.defaultTheme": {
+          "type": "string",
+          "default": "classic",
+          "enum": [
+            "classic",
+            "green",
+            "blue",
+            "dark",
+            "purple"
+          ],
+          "description": "Default board theme."
+        },
+        "chess.defaultPieceSet": {
+          "type": "string",
+          "default": "classic",
+          "enum": [
+            "classic",
+            "neo",
+            "alpha",
+            "wood"
+          ],
+          "description": "Default piece set."
+        },
+        "chess.engineDepth": {
+          "type": "number",
+          "default": 12,
+          "minimum": 4,
+          "maximum": 24,
+          "description": "Default engine search depth."
+        }
+      }
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "chess",
+          "title": "Chess",
+          "icon": "media/chess-activity.svg"
+        }
+      ]
+    },
+    "views": {
+      "chess": [
+        {
+          "id": "chess.activity",
+          "name": "Chess"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "chess.newGame",
+          "when": "view == chess.activity",
+          "group": "navigation"
+        },
+        {
+          "command": "chess.openAnalysisBoard",
+          "when": "view == chess.activity",
+          "group": "navigation"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "build": "npm run build:webview && npm run build:extension",
+    "build:webview": "npm --prefix webview-ui run build",
+    "build:extension": "tsc -p .",
+    "watch:webview": "npm --prefix webview-ui run dev",
+    "watch:extension": "tsc -p . --watch",
+    "dev": "npm-run-all --parallel watch:webview watch:extension",
+    "package": "npm run build && npx @vscode/vsce package --allow-missing-repository",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.1",
+    "@types/vscode": "^1.92.0",
+    "@vscode/test-electron": "^2.4.1",
+    "@vscode/vsce": "^3.2.2",
+    "npm-run-all": "^4.1.5",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}
