@@ -137,9 +137,18 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    workerRef.current = new Worker(new URL("./workers/engine.worker.ts", import.meta.url), {
-      type: "module"
-    });
+    try {
+      workerRef.current = new Worker(
+        new URL("./workers/engine.worker.ts", import.meta.url),
+        { type: "module" }
+      );
+    } catch (error) {
+      // The engine worker is optional (analysis only). If the webview CSP
+      // blocks worker creation, keep the app playable instead of crashing.
+      console.error("Chess engine worker failed to start:", error);
+      workerRef.current = null;
+      return;
+    }
 
     workerRef.current.onmessage = (event: MessageEvent<WorkerResult>) => {
       const message = event.data;
@@ -166,18 +175,21 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    const chess = derived.chess;
     const shouldAnalyze = state.settings.showEvaluationBar || state.mode !== "human";
     if (!workerRef.current || !shouldAnalyze) {
       return;
     }
 
+    // Derive the position from stable inputs. Do NOT depend on the derived
+    // chess object — it is a fresh instance every render, which would make
+    // this effect (which updates engine state) loop forever.
+    const fen = createChess(state.initialFen, state.moves, state.cursor).fen();
     const requestId = Date.now();
     useChessStore.getState().setEngineThinking(true, requestId);
     workerRef.current.postMessage({
       type: "analyze",
       requestId,
-      fen: chess.fen(),
+      fen,
       depth: state.settings.engineDepth,
       multiPv: state.engine.multiPv,
       infinite: state.mode === "analysis" || state.mode === "computer"
@@ -189,8 +201,7 @@ export default function App() {
     state.mode,
     state.settings.engineDepth,
     state.settings.showEvaluationBar,
-    state.engine.multiPv,
-    derived.chess
+    state.engine.multiPv
   ]);
 
   const boardStatus = useMemo(() => {
