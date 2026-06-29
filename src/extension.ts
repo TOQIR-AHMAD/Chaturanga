@@ -157,9 +157,12 @@ async function resumeSavedGame(
 export async function activate(
   context: vscode.ExtensionContext
 ): Promise<void> {
-  const activityProvider = new ChessActivityProvider();
+  const activityProvider = new ChessActivityProvider(context.extensionUri);
   context.subscriptions.push(
-    vscode.window.registerTreeDataProvider("chess.activity", activityProvider)
+    vscode.window.registerWebviewViewProvider(
+      ChessActivityProvider.viewType,
+      activityProvider
+    )
   );
 
   context.subscriptions.push(

@@ -190,7 +190,8 @@
       "chess": [
         {
           "id": "chess.activity",
-          "name": "Chess"
+          "name": "Chess",
+          "type": "webview"
         }
       ]
     },
