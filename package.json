@@ -2,7 +2,7 @@
   "name": "chaturanga",
   "displayName": "Chaturanga",
   "description": "Play chess in VS Code — against a friend or an offline computer opponent.",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "publisher": "ToqirAhmad",
   "license": "MIT",
   "icon": "media/icon.png",
