@@ -1,7 +1,7 @@
 {
   "name": "chaturanga",
   "displayName": "Chaturanga",
-  "description": "Play and analyze chess directly inside VS Code with an offline-first chess experience.",
+  "description": "Play chess in VS Code — against a friend or an offline computer opponent.",
   "version": "0.1.4",
   "publisher": "ToqirAhmad",
   "license": "MIT",
@@ -14,9 +14,9 @@
     "chess",
     "vscode",
     "chessboard",
-    "analysis",
     "game",
-    "stockfish"
+    "offline",
+    "computer"
   ],
   "engines": {
     "vscode": "^1.92.0"
