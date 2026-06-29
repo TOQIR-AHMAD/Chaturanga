@@ -7,15 +7,32 @@ export type ChessView =
 
 export type ExternalCommand =
   | "newGame"
+  | "newHuman"
+  | "newComputer"
+  | "setDifficulty"
   | "flipBoard"
   | "undo"
   | "redo"
+  | "save"
   | "importPgn"
   | "loadFen"
   | "resumeGame"
   | "copyFenRequest"
   | "requestExportPgn"
   | "openSettings";
+
+export interface UiState {
+  status: string;
+  turn: string;
+  result: string;
+  whiteClock: string;
+  blackClock: string;
+  moves: string[];
+  capturedWhite: string;
+  capturedBlack: string;
+  mode: string;
+  difficulty: string;
+}
 
 export interface SavedGameRecord {
   id: string;
@@ -74,4 +91,8 @@ export type WebviewToExtensionMessage =
       payload: {
         message: string;
       };
+    }
+  | {
+      type: "uiState";
+      payload: UiState;
     };

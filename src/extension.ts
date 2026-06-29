@@ -14,6 +14,8 @@ import {
   writeWorkspacePayload
 } from "./utils/storage";
 
+let activityProvider: ChessActivityProvider | undefined;
+
 async function withPanel(
   context: vscode.ExtensionContext,
   callback?: (panel: ChessPanel) => Promise<void> | void
@@ -93,6 +95,10 @@ async function handleWebviewMessage(
       void vscode.window.showInformationMessage(message.payload.message);
       return;
     }
+    case "uiState": {
+      activityProvider?.updateState(message.payload);
+      return;
+    }
     default: {
       return;
     }
@@ -157,7 +163,12 @@ async function resumeSavedGame(
 export async function activate(
   context: vscode.ExtensionContext
 ): Promise<void> {
-  const activityProvider = new ChessActivityProvider(context.extensionUri);
+  activityProvider = new ChessActivityProvider(
+    context.extensionUri,
+    (command, payload) => {
+      void postCommand(context, command, payload);
+    }
+  );
   context.subscriptions.push(
     vscode.window.registerWebviewViewProvider(
       ChessActivityProvider.viewType,

@@ -2,10 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import type { ExtensionToWebviewMessage } from "../../src/types/messages";
 import { ChessBoard } from "./components/ChessBoard";
-import { MoveHistory } from "./components/MoveHistory";
 import { PromotionDialog } from "./components/PromotionDialog";
-import { Sidebar } from "./components/Sidebar";
-import { Toolbar } from "./components/Toolbar";
 import { playSound } from "./services/audio";
 import { createChess } from "./services/chess-core";
 import {
@@ -38,6 +35,7 @@ export default function App() {
   const tickRef = useRef<number | null>(null);
   const lastMoveCount = useRef(0);
   const [statusFlash] = useState("");
+  const [fullscreen, setFullscreen] = useState(false);
 
   useEffect(() => {
     const cached = window.localStorage.getItem(localStorageKey);
@@ -195,6 +193,37 @@ export default function App() {
     state.difficulty
   ]);
 
+  // Push a compact view-model to the extension so the activity-bar sidebar
+  // (a separate webview) can show live game info and controls.
+  useEffect(() => {
+    const s = useChessStore.getState();
+    const d = selectDerivedState(s);
+    postToExtension({
+      type: "uiState",
+      payload: {
+        status: s.thinking ? "Computer is thinking…" : d.statusText,
+        turn: d.chess.turn() === "w" ? "White" : "Black",
+        result: d.result,
+        whiteClock: d.clocks.white,
+        blackClock: d.clocks.black,
+        moves: d.history.map((move) => move.san),
+        capturedWhite: d.captured.white.join(" "),
+        capturedBlack: d.captured.black.join(" "),
+        mode: s.mode,
+        difficulty: s.difficulty
+      }
+    });
+  }, [
+    state.moves,
+    state.cursor,
+    state.thinking,
+    state.mode,
+    state.difficulty,
+    state.whiteMs,
+    state.blackMs,
+    state.hydrated
+  ]);
+
   const boardStatus = useMemo(() => {
     if (state.thinking) {
       return "Computer is thinking…";
@@ -229,6 +258,22 @@ export default function App() {
     switch (message.command) {
       case "newGame":
         store.newGame();
+        break;
+      case "newHuman":
+        store.newGame("human");
+        break;
+      case "newComputer":
+        store.newGame("computer");
+        break;
+      case "setDifficulty":
+        if (message.payload && typeof message.payload === "object" && "difficulty" in message.payload) {
+          store.setComputerPreferences({
+            difficulty: (message.payload as { difficulty: "easy" | "medium" | "hard" }).difficulty
+          });
+        }
+        break;
+      case "save":
+        store.saveCurrentGame();
         break;
       case "flipBoard":
         store.flipBoard();
@@ -276,40 +321,50 @@ export default function App() {
     }
   }
 
+  if (fullscreen) {
+    return (
+      <div className="fixed inset-0 z-50 flex flex-col bg-[#1b1a18] p-3 font-ui text-white">
+        <div className="mb-2 flex items-center justify-between">
+          <span className="text-sm text-white/70">{boardStatus}</span>
+          <button className="pill" type="button" onClick={() => setFullscreen(false)}>
+            Exit Fullscreen
+          </button>
+        </div>
+        <div className="grid flex-1 place-items-center overflow-auto">
+          <div className="relative w-full" style={{ maxWidth: "min(92vh, 100%)" }}>
+            <ChessBoard />
+            <PromotionDialog />
+          </div>
+        </div>
+        {state.toast ? (
+          <div className="fixed bottom-5 right-5 rounded-2xl bg-black/70 px-4 py-3 text-sm shadow-lg">
+            {state.toast}
+          </div>
+        ) : null}
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(129,182,76,0.2),_transparent_40%),linear-gradient(180deg,_#262522_0%,_#1b1a18_100%)] p-4 font-ui text-white md:p-6">
-      <div className="mx-auto flex max-w-[1280px] flex-col gap-4">
-        <header className="flex flex-col gap-3 rounded-[30px] border border-white/10 bg-black/15 px-5 py-4 backdrop-blur-sm md:flex-row md:items-end md:justify-between">
-          <div>
-            <p className="text-xs uppercase tracking-[0.28em] text-[#81B64C]">Chaturanga</p>
-            <h1 className="mt-2 font-display text-3xl md:text-4xl">
-              Play chess in VS Code.
-            </h1>
-          </div>
-          <div className="rounded-3xl bg-[#312E2B] px-4 py-3 text-sm text-white/80">
-            {boardStatus || statusFlash}
-          </div>
+      <div className="mx-auto flex max-w-[760px] flex-col gap-4">
+        <header className="flex items-center justify-between gap-3 rounded-[30px] border border-white/10 bg-black/15 px-5 py-3 backdrop-blur-sm">
+          <h1 className="font-display text-xl md:text-2xl">{boardStatus || statusFlash}</h1>
+          <button className="pill shrink-0" type="button" onClick={() => setFullscreen(true)}>
+            Fullscreen
+          </button>
         </header>
 
-        <Toolbar />
-
-        <div className="grid gap-4 xl:grid-cols-[300px_minmax(0,1fr)_320px]">
-          <Sidebar />
-
-          <main className="relative flex flex-col gap-4 rounded-[30px] border border-white/10 bg-black/10 p-4">
+        <main className="relative flex flex-col gap-4">
+          <div className="relative">
             <ChessBoard />
-
-            {state.view === "saved" ? <SavedGames /> : null}
-            {state.view === "recent" ? <RecentGames /> : null}
-            {state.view === "settings" ? <SettingsPanel /> : null}
             <PromotionDialog />
-          </main>
+          </div>
 
-          <section className="flex flex-col gap-4 rounded-[30px] border border-white/10 bg-black/10 p-4">
-            <MoveHistory />
-            <CapturedPieces />
-          </section>
-        </div>
+          {state.view === "saved" ? <SavedGames /> : null}
+          {state.view === "recent" ? <RecentGames /> : null}
+          {state.view === "settings" ? <SettingsPanel /> : null}
+        </main>
       </div>
 
       {state.toast ? (
@@ -408,7 +463,7 @@ function SettingsPanel() {
       <p className="text-xs uppercase tracking-[0.18em] text-white/45">Settings</p>
       <div className="mt-3 grid gap-3 md:grid-cols-2">
         <label className="rounded-2xl bg-black/15 px-3 py-3 text-sm">
-          Theme
+          Board Theme
           <select
             className="mt-2 w-full rounded-xl bg-black/15 px-3 py-2"
             value={settings.theme}
@@ -419,19 +474,6 @@ function SettingsPanel() {
             <option value="blue">Blue</option>
             <option value="dark">Dark</option>
             <option value="purple">Purple</option>
-          </select>
-        </label>
-        <label className="rounded-2xl bg-black/15 px-3 py-3 text-sm">
-          Piece Set
-          <select
-            className="mt-2 w-full rounded-xl bg-black/15 px-3 py-2"
-            value={settings.pieceSet}
-            onChange={(event) => updateSettings({ pieceSet: event.target.value as never })}
-          >
-            <option value="classic">Classic</option>
-            <option value="neo">Neo</option>
-            <option value="alpha">Alpha</option>
-            <option value="wood">Wood</option>
           </select>
         </label>
       </div>
@@ -459,23 +501,3 @@ function SettingsPanel() {
   );
 }
 
-function CapturedPieces() {
-  const state = useChessStore();
-  const { captured } = selectDerivedState(state);
-
-  return (
-    <section className="rounded-3xl border border-white/10 bg-[#312E2B] p-4">
-      <p className="text-xs uppercase tracking-[0.18em] text-white/45">Captured</p>
-      <div className="mt-3 grid gap-3 text-sm">
-        <div>
-          <p className="text-white/55">White</p>
-          <p>{captured.white.join(" ") || "None"}</p>
-        </div>
-        <div>
-          <p className="text-white/55">Black</p>
-          <p>{captured.black.join(" ") || "None"}</p>
-        </div>
-      </div>
-    </section>
-  );
-}

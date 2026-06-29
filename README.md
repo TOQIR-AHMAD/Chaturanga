@@ -1,75 +1,72 @@
 <div align="center">
   <h1>Chaturanga</h1>
-  <p><strong>Chess inside VS Code</strong></p>
-  <p>Play, analyze, and manage games directly in your editor.</p>
+  <p><strong>Play chess inside VS Code</strong></p>
+  <p>A fast, offline chess board right in your editor.</p>
 </div>
 
 ## Overview
 
-Chaturanga is a VS Code extension that provides an offline-first chess experience using a webview-based UI built with React and modern web technologies.
+Chaturanga is a VS Code extension for playing chess without leaving your editor. Open the board from the Chess activity bar and play a friend on the same screen or take on a built-in computer opponent — all offline.
 
-## What It Does
+## Features
 
-- Play chess locally in human vs human mode
-- Play against a computer engine offline
-- Analyze positions using FEN and PGN
-- Import and export games
-- Resume saved games and sessions
-- Undo and redo moves
-- Flip board orientation
-- Copy and paste FEN positions
+- **Play with a Friend** — two players on the same board
+- **Play vs Computer** — built-in offline opponent with Easy / Medium / Hard levels
+- **Classic Staunton pieces** with multiple board themes
+- **Undo / Redo**, board flip, and move history
+- **Save & resume** games — your board is restored when you reopen VS Code
+- **Import / export PGN** and copy / paste FEN
+- Opening detection for the current position
 
-## Modes
+## Getting Started
 
-- **Play**: Real-time chess with move history and save support
-- **Analyze**: Study positions using FEN/PGN and engine lines
-- **Puzzle**: Solve built-in chess puzzles
+1. Click the **Chess** icon in the Activity Bar.
+2. Press **New Game** to open the board.
+3. In the board's toolbar, choose **Play a Friend** or **Play Computer**.
+4. Drag or click a piece, then click a highlighted square to move.
 
 ## Commands
 
 | Command | Purpose |
 | --- | --- |
-| `Chess: Open Board` | Open the main chess interface |
+| `Chess: Open Board` | Open the chess board |
 | `Chess: New Game` | Start a fresh game |
 | `Chess: Flip Board` | Toggle board orientation |
-| `Chess: Undo Move` | Step backward through move history |
-| `Chess: Redo Move` | Step forward through move history |
-| `Chess: Analyze Position` | Open analysis tools for the current position |
+| `Chess: Undo Move` | Step backward through moves |
+| `Chess: Redo Move` | Step forward through moves |
 | `Chess: Export PGN` | Export the current game as PGN |
-| `Chess: Import PGN` | Load a PGN into the board |
-| `Chess: Copy FEN` | Copy the current FEN to the clipboard |
-| `Chess: Paste FEN` | Load a FEN from the clipboard |
-| `Chess: Resume Game` | Resume a saved or recent game |
-| `Chess: Open Analysis Board` | Launch the dedicated analysis board |
-| `Chess: Open Settings` | Open in-extension preferences |
+| `Chess: Import PGN` | Load a PGN from a file |
+| `Chess: Copy FEN` | Copy the current FEN |
+| `Chess: Paste FEN` | Load a position from a FEN |
+| `Chess: Resume Game` | Resume a saved game |
+| `Chess: Open Settings` | Open in-board preferences |
 
-## Architecture
+## Keyboard Shortcuts
 
-```text
-src/           Extension backend
-webview-ui/    React frontend
-media/         Assets
-tests/         Unit tests
-docs/          Documentation
-```
+Active only while the chess board is focused:
+
+| Action | Shortcut |
+| --- | --- |
+| New game | `Ctrl/Cmd+Alt+N` |
+| Undo move | `Ctrl/Cmd+Z` |
+| Redo move | `Ctrl+Y` / `Cmd+Shift+Z` |
+| Flip board | `Ctrl/Cmd+Alt+F` |
 
 ## Tech Stack
 
-- TypeScript
-- VS Code Extension API
-- React + Vite
-- Zustand
-- TailwindCSS
-- chess.js
-- Web Workers
+- TypeScript · VS Code Extension API
+- React + Vite · Zustand · TailwindCSS
+- chess.js · Web Worker (computer opponent)
 
 ## Persistence
 
-- VS Code `globalState` for saved games, sessions, and settings
+- VS Code `globalState` for saved games and settings
 - Webview `localStorage` for fast UI restore
 
-## Notes
+## Credits
 
-- Online import features require network access during runtime.
-- The webview bundle must exist before launching the extension outside watch mode.
-- The packaged VSIX is generated successfully from this workspace.
+- Chess pieces: classic Staunton set by **Colin M.L. Burnett** (the "cburnett" set), used under the BSD license.
+
+## License
+
+MIT — see [LICENSE](LICENSE).

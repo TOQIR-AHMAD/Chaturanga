@@ -14,6 +14,10 @@ function DraggablePiece({
   square: string;
 }) {
   const pieceSet = useChessStore((state) => state.settings.pieceSet);
+  const orientation = useChessStore((state) => state.orientation);
+  // Flip only the far-side pawns so they point in their moving direction.
+  const topColor = orientation === "white" ? "b" : "w";
+  const flipped = piece[1] === "p" && piece[0] === topColor;
   const [{ isDragging }, dragRef] = useDrag(
     () => ({
       type: dragType,
@@ -35,7 +39,7 @@ function DraggablePiece({
       tabIndex={-1}
       type="button"
     >
-      <PieceToken piece={piece} pieceSet={pieceSet} dragging={isDragging} />
+      <PieceToken piece={piece} pieceSet={pieceSet} dragging={isDragging} flipped={flipped} />
     </button>
   );
 }
