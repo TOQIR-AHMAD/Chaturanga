@@ -1,13 +1,22 @@
 {
-  "name": "chess-vscode",
-  "displayName": "Chess.com for VS Code",
-  "description": "Play and analyze chess directly inside VS Code with an offline-first Chess.com-inspired experience.",
+  "name": "chaturanga",
+  "displayName": "Chaturanga",
+  "description": "Play and analyze chess directly inside VS Code with an offline-first chess experience.",
   "version": "0.1.0",
-  "publisher": "junai",
+  "publisher": "ToqirAhmad",
   "license": "MIT",
-  "private": true,
-  "workspaces": [
-    "webview-ui"
+  "icon": "media/icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TOQIR-AHMAD/Chaturanga.git"
+  },
+  "keywords": [
+    "chess",
+    "vscode",
+    "chessboard",
+    "analysis",
+    "game",
+    "stockfish"
   ],
   "engines": {
     "vscode": "^1.92.0"
@@ -104,36 +113,37 @@
     "keybindings": [
       {
         "command": "chess.newGame",
-        "key": "ctrl+n",
-        "mac": "cmd+n",
-        "when": "editorTextFocus"
+        "key": "ctrl+alt+n",
+        "mac": "cmd+alt+n",
+        "when": "activeWebviewPanelId == 'chess.board'"
       },
       {
         "command": "chess.undo",
         "key": "ctrl+z",
         "mac": "cmd+z",
-        "when": "editorTextFocus"
+        "when": "activeWebviewPanelId == 'chess.board'"
       },
       {
         "command": "chess.redo",
         "key": "ctrl+y",
-        "when": "editorTextFocus"
+        "mac": "cmd+shift+z",
+        "when": "activeWebviewPanelId == 'chess.board'"
       },
       {
         "command": "chess.flipBoard",
-        "key": "ctrl+f",
-        "mac": "cmd+f",
-        "when": "editorTextFocus"
+        "key": "ctrl+alt+f",
+        "mac": "cmd+alt+f",
+        "when": "activeWebviewPanelId == 'chess.board'"
       },
       {
         "command": "chess.resumeGame",
-        "key": "ctrl+s",
-        "mac": "cmd+s",
-        "when": "editorTextFocus"
+        "key": "ctrl+alt+r",
+        "mac": "cmd+alt+r",
+        "when": "activeWebviewPanelId == 'chess.board'"
       }
     ],
     "configuration": {
-      "title": "Chess.com for VS Code",
+      "title": "Chaturanga",
       "properties": {
         "chess.defaultTheme": {
           "type": "string",

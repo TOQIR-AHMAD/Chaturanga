@@ -47,7 +47,7 @@ export class ChessPanel {
 
     const panel = vscode.window.createWebviewPanel(
       "chess.board",
-      "Chess.com for VS Code",
+      "Chaturanga",
       column ?? vscode.ViewColumn.One,
       {
         enableScripts: true,
@@ -126,7 +126,7 @@ export class ChessPanel {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="Content-Security-Policy" content="${csp}" />
-    <title>Chess.com for VS Code</title>
+    <title>Chaturanga</title>
     <link rel="stylesheet" href="${styleUri}" />
   </head>
   <body>

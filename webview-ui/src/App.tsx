@@ -289,7 +289,7 @@ export default function App() {
         <header className="flex flex-col gap-3 rounded-[30px] border border-white/10 bg-black/15 px-5 py-4 backdrop-blur-sm md:flex-row md:items-end md:justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.28em] text-[#81B64C]">
-              Chess.com for VS Code
+              Chaturanga for VS Code
             </p>
             <h1 className="mt-2 font-display text-3xl md:text-4xl">
               Local board, analysis, puzzles, and imports.
