@@ -1,102 +1,75 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Chaturanga</title>
-</head>
-<body>
+<div align="center">
+  <h1>Chaturanga</h1>
+  <p><strong>Chess inside VS Code</strong></p>
+  <p>Play, analyze, and manage games directly in your editor.</p>
+</div>
 
-  <header>
-    <h1>Chaturanga</h1>
-    <p>Chess inside VS Code - play, analyze, and manage games directly in your editor.</p>
-  </header>
+## Overview
 
-  <section>
-    <h2>Overview</h2>
-    <p>
-      Chaturanga is a VS Code extension that provides an offline-first chess experience
-      using a webview-based UI built with React and modern web technologies.
-    </p>
-  </section>
+Chaturanga is a VS Code extension that provides an offline-first chess experience using a webview-based UI built with React and modern web technologies.
 
-  <section>
-    <h2>What it does</h2>
-    <ul>
-      <li>Play chess locally (human vs human)</li>
-      <li>Play against a computer engine (offline)</li>
-      <li>Analyze positions using FEN and PGN</li>
-      <li>Import and export games</li>
-      <li>Resume saved games and sessions</li>
-      <li>Undo and redo moves</li>
-      <li>Flip board orientation</li>
-      <li>Copy and paste FEN positions</li>
-    </ul>
-  </section>
+## What It Does
 
-  <section>
-    <h2>Modes</h2>
-    <ul>
-      <li><strong>Play:</strong> Real-time chess with move history and save support</li>
-      <li><strong>Analyze:</strong> Study positions using FEN/PGN and engine lines</li>
-      <li><strong>Puzzle:</strong> Solve built-in chess puzzles</li>
-    </ul>
-  </section>
+- Play chess locally in human vs human mode
+- Play against a computer engine offline
+- Analyze positions using FEN and PGN
+- Import and export games
+- Resume saved games and sessions
+- Undo and redo moves
+- Flip board orientation
+- Copy and paste FEN positions
 
-  <section>
-    <h2>Commands</h2>
-    <ul>
-      <li>Chess: Open Board</li>
-      <li>Chess: New Game</li>
-      <li>Chess: Flip Board</li>
-      <li>Chess: Undo Move</li>
-      <li>Chess: Redo Move</li>
-      <li>Chess: Analyze Position</li>
-      <li>Chess: Export PGN</li>
-      <li>Chess: Import PGN</li>
-      <li>Chess: Copy FEN</li>
-      <li>Chess: Paste FEN</li>
-      <li>Chess: Resume Game</li>
-      <li>Chess: Open Analysis Board</li>
-      <li>Chess: Open Settings</li>
-    </ul>
-  </section>
+## Modes
 
-  <section>
-    <h2>Architecture</h2>
-    <pre>
+- **Play**: Real-time chess with move history and save support
+- **Analyze**: Study positions using FEN/PGN and engine lines
+- **Puzzle**: Solve built-in chess puzzles
+
+## Commands
+
+| Command | Purpose |
+| --- | --- |
+| `Chess: Open Board` | Open the main chess interface |
+| `Chess: New Game` | Start a fresh game |
+| `Chess: Flip Board` | Toggle board orientation |
+| `Chess: Undo Move` | Step backward through move history |
+| `Chess: Redo Move` | Step forward through move history |
+| `Chess: Analyze Position` | Open analysis tools for the current position |
+| `Chess: Export PGN` | Export the current game as PGN |
+| `Chess: Import PGN` | Load a PGN into the board |
+| `Chess: Copy FEN` | Copy the current FEN to the clipboard |
+| `Chess: Paste FEN` | Load a FEN from the clipboard |
+| `Chess: Resume Game` | Resume a saved or recent game |
+| `Chess: Open Analysis Board` | Launch the dedicated analysis board |
+| `Chess: Open Settings` | Open in-extension preferences |
+
+## Architecture
+
+```text
 src/           Extension backend
 webview-ui/    React frontend
 media/         Assets
 tests/         Unit tests
 docs/          Documentation
-    </pre>
-  </section>
+```
 
-  <section>
-    <h2>Tech Stack</h2>
-    <ul>
-      <li>TypeScript</li>
-      <li>VS Code Extension API</li>
-      <li>React + Vite</li>
-      <li>Zustand</li>
-      <li>TailwindCSS</li>
-      <li>chess.js</li>
-      <li>Web Workers</li>
-    </ul>
-  </section>
+## Tech Stack
 
-  <section>
-    <h2>Persistence</h2>
-    <ul>
-      <li>VS Code globalState (saved games, sessions, settings)</li>
-      <li>Webview localStorage (fast UI restore)</li>
-    </ul>
-  </section>
+- TypeScript
+- VS Code Extension API
+- React + Vite
+- Zustand
+- TailwindCSS
+- chess.js
+- Web Workers
 
-  <footer>
-    <p>Offline-first chess experience inside VS Code.</p>
-  </footer>
+## Persistence
 
-</body>
-</html>
+- VS Code `globalState` for saved games, sessions, and settings
+- Webview `localStorage` for fast UI restore
+
+## Notes
+
+- Online import features require network access during runtime.
+- The webview bundle must exist before launching the extension outside watch mode.
+- The packaged VSIX is generated successfully from this workspace.
