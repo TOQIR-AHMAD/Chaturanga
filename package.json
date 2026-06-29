@@ -2,7 +2,7 @@
   "name": "chaturanga",
   "displayName": "Chaturanga",
   "description": "Play and analyze chess directly inside VS Code with an offline-first chess experience.",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "publisher": "ToqirAhmad",
   "license": "MIT",
   "icon": "media/icon.png",
@@ -25,22 +25,7 @@
     "Other",
     "Education"
   ],
-  "activationEvents": [
-    "onCommand:chess.openBoard",
-    "onCommand:chess.newGame",
-    "onCommand:chess.flipBoard",
-    "onCommand:chess.undo",
-    "onCommand:chess.redo",
-    "onCommand:chess.analyze",
-    "onCommand:chess.exportPGN",
-    "onCommand:chess.importPGN",
-    "onCommand:chess.copyFEN",
-    "onCommand:chess.pasteFEN",
-    "onCommand:chess.openSettings",
-    "onCommand:chess.resumeGame",
-    "onCommand:chess.openAnalysisBoard",
-    "onView:chess.activity"
-  ],
+  "activationEvents": [],
   "main": "./dist/extension.js",
   "contributes": {
     "commands": [
@@ -67,11 +52,6 @@
       {
         "command": "chess.redo",
         "title": "Chess: Redo Move",
-        "category": "Chess"
-      },
-      {
-        "command": "chess.analyze",
-        "title": "Chess: Analyze Position",
         "category": "Chess"
       },
       {
@@ -102,11 +82,6 @@
       {
         "command": "chess.resumeGame",
         "title": "Chess: Resume Game",
-        "category": "Chess"
-      },
-      {
-        "command": "chess.openAnalysisBoard",
-        "title": "Chess: Open Analysis Board",
         "category": "Chess"
       }
     ],
@@ -167,13 +142,6 @@
             "wood"
           ],
           "description": "Default piece set."
-        },
-        "chess.engineDepth": {
-          "type": "number",
-          "default": 12,
-          "minimum": 4,
-          "maximum": 24,
-          "description": "Default engine search depth."
         }
       }
     },
@@ -199,11 +167,6 @@
       "view/title": [
         {
           "command": "chess.newGame",
-          "when": "view == chess.activity",
-          "group": "navigation"
-        },
-        {
-          "command": "chess.openAnalysisBoard",
           "when": "view == chess.activity",
           "group": "navigation"
         }

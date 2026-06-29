@@ -1,17 +1,14 @@
 import { create } from "zustand";
-import type { Color, Square } from "chess.js";
+import type { Square } from "chess.js";
 
 import type {
   ChessSettings,
   Difficulty,
-  EngineLine,
   GameMode,
-  Orientation,
   PersistedCurrentState,
   SavedGame,
   WorkspaceState
 } from "../types";
-import { puzzles } from "../services/puzzles";
 import {
   START_FEN,
   createChess,
@@ -23,7 +20,6 @@ import {
   getResult,
   importPgn,
   moveToUci,
-  setPieceAtFen,
   validateFen
 } from "../services/chess-core";
 
@@ -33,11 +29,9 @@ const defaultSettings: ChessSettings = {
   animationSpeed: 180,
   showCoordinates: true,
   sounds: true,
-  engineDepth: 12,
   autoSave: true,
   autoFlipBoard: false,
-  showLegalMoves: true,
-  showEvaluationBar: true
+  showLegalMoves: true
 };
 
 const defaultCurrentState: PersistedCurrentState = {
@@ -50,55 +44,28 @@ const defaultCurrentState: PersistedCurrentState = {
   currentGameId: null,
   settings: defaultSettings,
   computerColor: "b",
-  difficulty: "intermediate",
+  difficulty: "medium",
   whiteMs: 600000,
-  blackMs: 600000,
-  puzzleIndex: 0,
-  puzzleStreak: 0
-};
-
-type EngineState = {
-  thinking: boolean;
-  lines: EngineLine[];
-  bestMove: string | null;
-  evaluation: number;
-  infinite: boolean;
-  multiPv: number;
-  requestId: number;
-};
-
-type OnlineState = {
-  loading: boolean;
-  provider: "chesscom" | "lichess";
-  username: string;
-  message: string | null;
+  blackMs: 600000
 };
 
 interface ChessStoreState extends PersistedCurrentState {
   hydrated: boolean;
+  thinking: boolean;
   savedGames: SavedGame[];
   recentGames: SavedGame[];
   selectedSquare: string | null;
   legalTargets: string[];
   pendingPromotion: { from: string; to: string } | null;
-  editMode: boolean;
-  editorPiece: string | null;
-  analysisSideToMove: Color;
-  puzzleSolved: boolean;
-  puzzleStep: number;
-  engine: EngineState;
-  online: OnlineState;
   toast: string | null;
   setToast: (value: string | null) => void;
+  setThinking: (value: boolean) => void;
   hydrate: (payload: WorkspaceState) => void;
   setView: (view: ChessStoreState["view"]) => void;
   setMode: (mode: GameMode) => void;
   newGame: (mode?: GameMode) => void;
   selectSquare: (square: string) => void;
-  clearSquare: (square: string) => void;
-  setEditorPiece: (piece: string | null) => void;
-  toggleEditMode: () => void;
-  setAnalysisSideToMove: (side: Color) => void;
+  playMove: (from: string, to: string, promotion?: "q" | "r" | "b" | "n") => void;
   promote: (promotion: "q" | "r" | "b" | "n") => void;
   cancelPromotion: () => void;
   undo: () => void;
@@ -111,18 +78,12 @@ interface ChessStoreState extends PersistedCurrentState {
   resumeGame: (game: SavedGame) => void;
   deleteSavedGame: (id: string) => void;
   renameSavedGame: (id: string, name: string) => void;
-  importSavedGames: (games: SavedGame[]) => void;
   updateSettings: (partial: Partial<ChessSettings>) => void;
   setComputerPreferences: (partial: {
     difficulty?: Difficulty;
     computerColor?: "w" | "b";
   }) => void;
   tickClock: (elapsedMs: number) => void;
-  resetPuzzle: () => void;
-  nextPuzzle: () => void;
-  setEngineResult: (lines: EngineLine[], depth: number, bestMove?: string) => void;
-  setEngineThinking: (thinking: boolean, requestId?: number) => void;
-  setOnlineState: (partial: Partial<OnlineState>) => void;
 }
 
 function nowIso(): string {
@@ -147,8 +108,8 @@ function buildSavedGame(state: ChessStoreState, name: string): SavedGame {
     orientation: state.orientation,
     whiteMs: state.whiteMs,
     blackMs: state.blackMs,
-    difficulty: state.difficulty,
-    computerColor: state.computerColor
+    computerColor: state.computerColor,
+    difficulty: state.difficulty
   };
 }
 
@@ -165,13 +126,11 @@ function updateTimeline(
   }
 
   const requiresPromotion =
-    piece.type === "p" && ((piece.color === "w" && to.endsWith("8")) || (piece.color === "b" && to.endsWith("1")));
+    piece.type === "p" &&
+    ((piece.color === "w" && to.endsWith("8")) || (piece.color === "b" && to.endsWith("1")));
   if (requiresPromotion && !promotion) {
     return {
-      pendingPromotion: {
-        from,
-        to
-      }
+      pendingPromotion: { from, to }
     };
   }
 
@@ -216,9 +175,7 @@ function serializeCurrentState(state: ChessStoreState): PersistedCurrentState {
     computerColor: state.computerColor,
     difficulty: state.difficulty,
     whiteMs: state.whiteMs,
-    blackMs: state.blackMs,
-    puzzleIndex: state.puzzleIndex,
-    puzzleStreak: state.puzzleStreak
+    blackMs: state.blackMs
   };
 }
 
@@ -231,42 +188,25 @@ export function serializeWorkspaceState(state: ChessStoreState): WorkspaceState 
   };
 }
 
-export const useChessStore = create<ChessStoreState>((set, get) => ({
+export const useChessStore = create<ChessStoreState>((set) => ({
   ...defaultCurrentState,
   hydrated: false,
+  thinking: false,
   savedGames: [],
   recentGames: [],
   selectedSquare: null,
   legalTargets: [],
   pendingPromotion: null,
-  editMode: false,
-  editorPiece: "wq",
-  analysisSideToMove: "w",
-  puzzleSolved: false,
-  puzzleStep: 0,
-  engine: {
-    thinking: false,
-    lines: [],
-    bestMove: null,
-    evaluation: 0,
-    infinite: true,
-    multiPv: 3,
-    requestId: 0
-  },
-  online: {
-    loading: false,
-    provider: "chesscom",
-    username: "",
-    message: null
-  },
   toast: null,
   setToast: (value) => set({ toast: value }),
+  setThinking: (value) => set({ thinking: value }),
   hydrate: (payload) =>
     set(() => ({
       ...(payload.currentState ?? defaultCurrentState),
       hydrated: true,
-      settings:
-        (payload.currentState?.settings ?? payload.settings ?? defaultSettings) as ChessSettings,
+      settings: (payload.currentState?.settings ??
+        payload.settings ??
+        defaultSettings) as ChessSettings,
       savedGames: payload.savedGames ?? [],
       recentGames: payload.recentGames ?? [],
       selectedSquare: null,
@@ -275,104 +215,48 @@ export const useChessStore = create<ChessStoreState>((set, get) => ({
     })),
   setView: (view) => set({ view }),
   setMode: (mode) => set({ mode, view: "board" }),
-  newGame: (mode = "human") =>
+  newGame: (mode) =>
     set((state) => ({
-      mode,
+      mode: mode ?? state.mode,
       view: "board",
-      initialFen: mode === "puzzle" ? puzzles[state.puzzleIndex].fen : START_FEN,
+      initialFen: START_FEN,
       moves: [],
       cursor: 0,
       selectedSquare: null,
       legalTargets: [],
       pendingPromotion: null,
       currentGameId: null,
-      orientation: "white",
+      orientation: (mode ?? state.mode) === "computer" && state.computerColor === "w"
+        ? "black"
+        : "white",
       whiteMs: 600000,
       blackMs: 600000,
-      puzzleSolved: false,
-      puzzleStep: 0,
-      editMode: mode === "analysis",
-      analysisSideToMove: "w"
+      thinking: false
     })),
   selectSquare: (square) =>
     set((state) => {
-      if (state.editMode && state.mode === "analysis") {
-        const nextFen = setPieceAtFen(
-          createChess(state.initialFen, state.moves, state.cursor).fen(),
-          square,
-          state.editorPiece,
-          state.analysisSideToMove
-        );
-        return {
-          initialFen: nextFen,
-          moves: [],
-          cursor: 0,
-          selectedSquare: null,
-          legalTargets: []
-        };
+      const chess = createChess(state.initialFen, state.moves, state.cursor);
+
+      // In computer mode, the human only controls their own colour.
+      if (state.mode === "computer" && chess.turn() === state.computerColor) {
+        return state;
       }
 
-      const chess = createChess(state.initialFen, state.moves, state.cursor);
       const currentPiece = chess.get(square as Square);
+
       if (state.selectedSquare && state.legalTargets.includes(square)) {
         const next = updateTimeline(state, state.selectedSquare, square);
         if (!next) {
           return state;
         }
-        if ("pendingPromotion" in next && next.pendingPromotion) {
-          return next;
-        }
-
-        if (state.mode === "puzzle") {
-          const expected = puzzles[state.puzzleIndex].solution[state.puzzleStep];
-          const playedMove = (next.moves ?? state.moves)[(next.cursor ?? state.cursor) - 1];
-          if (expected !== playedMove) {
-            return {
-              selectedSquare: null,
-              legalTargets: [],
-              toast: "That move does not solve the puzzle."
-            };
-          }
-          const responseMove = puzzles[state.puzzleIndex].solution[state.puzzleStep + 1];
-          const nextState = {
-            ...next,
-            puzzleStep: state.puzzleStep + 1
-          };
-          if (!responseMove) {
-            return {
-              ...nextState,
-              puzzleSolved: true,
-              puzzleStreak: state.puzzleStreak + 1,
-              toast: "Puzzle solved."
-            };
-          }
-          const afterReply = updateTimeline(
-            {
-              ...state,
-              ...nextState
-            } as ChessStoreState,
-            responseMove.slice(0, 2),
-            responseMove.slice(2, 4),
-            (responseMove[4] as "q" | "r" | "b" | "n" | undefined) ?? undefined
-          );
-          return {
-            ...nextState,
-            ...afterReply,
-            puzzleStep: state.puzzleStep + 2
-          };
-        }
-
         return next;
       }
 
       if (!currentPiece) {
-        return {
-          selectedSquare: null,
-          legalTargets: []
-        };
+        return { selectedSquare: null, legalTargets: [] };
       }
 
-      if (state.mode !== "analysis" && currentPiece.color !== chess.turn()) {
+      if (currentPiece.color !== chess.turn()) {
         return state;
       }
 
@@ -381,26 +265,8 @@ export const useChessStore = create<ChessStoreState>((set, get) => ({
         legalTargets: getLegalTargets(state.initialFen, state.moves, state.cursor, square)
       };
     }),
-  clearSquare: (square) =>
-    set((state) => {
-      if (!state.editMode || state.mode !== "analysis") {
-        return state;
-      }
-      const nextFen = setPieceAtFen(
-        createChess(state.initialFen, state.moves, state.cursor).fen(),
-        square,
-        null,
-        state.analysisSideToMove
-      );
-      return {
-        initialFen: nextFen,
-        moves: [],
-        cursor: 0
-      };
-    }),
-  setEditorPiece: (piece) => set({ editorPiece: piece }),
-  toggleEditMode: () => set((state) => ({ editMode: !state.editMode })),
-  setAnalysisSideToMove: (side) => set({ analysisSideToMove: side }),
+  playMove: (from, to, promotion) =>
+    set((state) => updateTimeline(state, from, to, promotion) ?? state),
   promote: (promotion) =>
     set((state) => {
       if (!state.pendingPromotion) {
@@ -417,7 +283,8 @@ export const useChessStore = create<ChessStoreState>((set, get) => ({
   cancelPromotion: () => set({ pendingPromotion: null }),
   undo: () =>
     set((state) => ({
-      cursor: Math.max(0, state.cursor - 1),
+      // In computer mode, step back over the computer's reply too.
+      cursor: Math.max(0, state.cursor - (state.mode === "computer" ? 2 : 1)),
       selectedSquare: null,
       legalTargets: []
     })),
@@ -443,14 +310,14 @@ export const useChessStore = create<ChessStoreState>((set, get) => ({
       return false;
     }
     set({
-      mode: "analysis",
+      mode: "human",
       view: "board",
       initialFen: fen,
       moves: [],
       cursor: 0,
-      editMode: true,
       selectedSquare: null,
-      legalTargets: []
+      legalTargets: [],
+      currentGameId: null
     });
     return true;
   },
@@ -458,14 +325,14 @@ export const useChessStore = create<ChessStoreState>((set, get) => ({
     try {
       const parsed = importPgn(pgn);
       set({
-        mode: "analysis",
+        mode: "human",
         view: "board",
         initialFen: parsed.initialFen,
         moves: parsed.moves,
         cursor: parsed.cursor,
-        editMode: false,
         selectedSquare: null,
-        legalTargets: []
+        legalTargets: [],
+        currentGameId: null
       });
       return true;
     } catch {
@@ -475,17 +342,12 @@ export const useChessStore = create<ChessStoreState>((set, get) => ({
   },
   saveCurrentGame: (name) =>
     set((state) => {
-      const gameName =
-        name ||
-        `${state.mode === "analysis" ? "Analysis" : "Game"} ${new Date().toLocaleString()}`;
+      const gameName = name || `Game ${new Date().toLocaleString()}`;
       const saved = buildSavedGame(state, gameName);
       const existingIndex = state.savedGames.findIndex((entry) => entry.id === saved.id);
       const savedGames = [...state.savedGames];
       if (existingIndex >= 0) {
-        savedGames[existingIndex] = {
-          ...savedGames[existingIndex],
-          ...saved
-        };
+        savedGames[existingIndex] = { ...savedGames[existingIndex], ...saved };
       } else {
         savedGames.unshift(saved);
       }
@@ -498,7 +360,7 @@ export const useChessStore = create<ChessStoreState>((set, get) => ({
     }),
   resumeGame: (game) =>
     set((state) => ({
-      mode: game.mode as GameMode,
+      mode: (game.mode === "computer" ? "computer" : "human") as GameMode,
       view: "board",
       initialFen: game.initialFen,
       moves: game.moves,
@@ -507,12 +369,11 @@ export const useChessStore = create<ChessStoreState>((set, get) => ({
       currentGameId: game.id,
       whiteMs: game.whiteMs,
       blackMs: game.blackMs,
-      difficulty: game.difficulty,
-      computerColor: game.computerColor,
+      computerColor: game.computerColor ?? state.computerColor,
+      difficulty: game.difficulty ?? state.difficulty,
       recentGames: mergeRecent(state.recentGames, game),
       selectedSquare: null,
-      legalTargets: [],
-      editMode: game.mode === "analysis"
+      legalTargets: []
     })),
   deleteSavedGame: (id) =>
     set((state) => ({
@@ -525,10 +386,9 @@ export const useChessStore = create<ChessStoreState>((set, get) => ({
         entry.id === id ? { ...entry, name, updatedAt: nowIso() } : entry
       )
     })),
-  importSavedGames: (games) =>
+  updateSettings: (partial) =>
     set((state) => ({
-      savedGames: [...games, ...state.savedGames].slice(0, 40),
-      recentGames: state.recentGames
+      settings: { ...state.settings, ...partial }
     })),
   setComputerPreferences: (partial) =>
     set((state) => ({
@@ -541,13 +401,6 @@ export const useChessStore = create<ChessStoreState>((set, get) => ({
             ? "white"
             : state.orientation
     })),
-  updateSettings: (partial) =>
-    set((state) => ({
-      settings: {
-        ...state.settings,
-        ...partial
-      }
-    })),
   tickClock: (elapsedMs) =>
     set((state) => {
       const chess = createChess(state.initialFen, state.moves, state.cursor);
@@ -555,67 +408,9 @@ export const useChessStore = create<ChessStoreState>((set, get) => ({
         return state;
       }
       if (chess.turn() === "w") {
-        return {
-          whiteMs: Math.max(0, state.whiteMs - elapsedMs)
-        };
+        return { whiteMs: Math.max(0, state.whiteMs - elapsedMs) };
       }
-      return {
-        blackMs: Math.max(0, state.blackMs - elapsedMs)
-      };
-    }),
-  resetPuzzle: () =>
-    set((state) => ({
-      mode: "puzzle",
-      view: "board",
-      initialFen: puzzles[state.puzzleIndex].fen,
-      moves: [],
-      cursor: 0,
-      selectedSquare: null,
-      legalTargets: [],
-      puzzleSolved: false,
-      puzzleStep: 0
-    })),
-  nextPuzzle: () =>
-    set((state) => {
-      const nextIndex = (state.puzzleIndex + 1) % puzzles.length;
-      return {
-        puzzleIndex: nextIndex,
-        mode: "puzzle",
-        view: "board",
-        initialFen: puzzles[nextIndex].fen,
-        moves: [],
-        cursor: 0,
-        selectedSquare: null,
-        legalTargets: [],
-        puzzleSolved: false,
-        puzzleStep: 0
-      };
-    }),
-  setEngineResult: (lines, depth, bestMove) =>
-    set({
-      engine: {
-        ...get().engine,
-        thinking: false,
-        lines,
-        bestMove: bestMove ?? null,
-        evaluation: lines[0]?.score ?? 0,
-        requestId: get().engine.requestId
-      }
-    }),
-  setEngineThinking: (thinking, requestId) =>
-    set({
-      engine: {
-        ...get().engine,
-        thinking,
-        requestId: requestId ?? get().engine.requestId
-      }
-    }),
-  setOnlineState: (partial) =>
-    set({
-      online: {
-        ...get().online,
-        ...partial
-      }
+      return { blackMs: Math.max(0, state.blackMs - elapsedMs) };
     })
 }));
 

@@ -13,13 +13,8 @@ const actions: ActionButton[] = [
   {
     command: "chess.newGame",
     label: "New Game",
-    description: "Start a fresh local game",
+    description: "Open the board and start playing",
     primary: true
-  },
-  {
-    command: "chess.openAnalysisBoard",
-    label: "Analysis Board",
-    description: "Explore positions freely"
   },
   {
     command: "chess.resumeGame",
@@ -34,15 +29,15 @@ const actions: ActionButton[] = [
   {
     command: "chess.openSettings",
     label: "Settings",
-    description: "Board, pieces, and engine"
+    description: "Board theme and pieces"
   }
 ];
 
 const howToPlay: string[] = [
   "Click <strong>New Game</strong> to open the board in the editor.",
+  "In the board's side panel, choose <strong>Play with a Friend</strong> or <strong>Play vs Computer</strong>.",
   "Drag or click a piece, then click a highlighted square to move.",
-  "Use the side panel to flip the board, undo, redo, or analyze.",
-  "Switch to <strong>Analysis Board</strong> to study any position.",
+  "Use the toolbar to flip the board, undo, or redo.",
   "Save anytime — your game is restored when you reopen VS Code."
 ];
 

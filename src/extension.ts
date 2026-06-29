@@ -181,9 +181,6 @@ export async function activate(
     vscode.commands.registerCommand("chess.redo", async () => {
       await postCommand(context, "redo");
     }),
-    vscode.commands.registerCommand("chess.analyze", async () => {
-      await postCommand(context, "analyze");
-    }),
     vscode.commands.registerCommand("chess.exportPGN", async () => {
       await postCommand(context, "requestExportPgn");
     }),
@@ -193,14 +190,14 @@ export async function activate(
         return;
       }
 
-      await postCommand(context, "analyze", { pgn });
+      await postCommand(context, "importPgn", { pgn });
     }),
     vscode.commands.registerCommand("chess.copyFEN", async () => {
       await postCommand(context, "copyFenRequest");
     }),
     vscode.commands.registerCommand("chess.pasteFEN", async () => {
       const fen = await vscode.env.clipboard.readText();
-      await postCommand(context, "analyze", { fen, importAs: "fen" });
+      await postCommand(context, "loadFen", { fen });
     }),
     vscode.commands.registerCommand("chess.openSettings", async () => {
       await withPanel(context, async (panel) => {
@@ -212,14 +209,6 @@ export async function activate(
     }),
     vscode.commands.registerCommand("chess.resumeGame", async () => {
       await resumeSavedGame(context);
-    }),
-    vscode.commands.registerCommand("chess.openAnalysisBoard", async () => {
-      await withPanel(context, async (panel) => {
-        await panel.postMessage({
-          type: "command",
-          command: "openAnalysisBoard"
-        });
-      });
     })
   );
 }

@@ -10,9 +10,9 @@ export type ExternalCommand =
   | "flipBoard"
   | "undo"
   | "redo"
-  | "analyze"
+  | "importPgn"
+  | "loadFen"
   | "resumeGame"
-  | "openAnalysisBoard"
   | "copyFenRequest"
   | "requestExportPgn"
   | "openSettings";

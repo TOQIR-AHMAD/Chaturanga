@@ -2,14 +2,8 @@ import type { SavedGameRecord, WorkspacePayload } from "../../src/types/messages
 
 export type ThemeId = "classic" | "green" | "blue" | "dark" | "purple";
 export type PieceSetId = "classic" | "neo" | "alpha" | "wood";
-export type GameMode = "human" | "computer" | "analysis" | "puzzle";
-export type Difficulty =
-  | "beginner"
-  | "easy"
-  | "intermediate"
-  | "advanced"
-  | "expert"
-  | "maximum";
+export type GameMode = "human" | "computer";
+export type Difficulty = "easy" | "medium" | "hard";
 export type Orientation = "white" | "black";
 
 export interface ThemeDefinition {
@@ -30,19 +24,9 @@ export interface ChessSettings {
   animationSpeed: number;
   showCoordinates: boolean;
   sounds: boolean;
-  engineDepth: number;
   autoSave: boolean;
   autoFlipBoard: boolean;
   showLegalMoves: boolean;
-  showEvaluationBar: boolean;
-}
-
-export interface EngineLine {
-  move: string;
-  san: string;
-  pv: string[];
-  score: number;
-  depth: number;
 }
 
 export interface OpeningLine {
@@ -53,18 +37,9 @@ export interface OpeningLine {
   winRate: string;
 }
 
-export interface PuzzleLine {
-  id: string;
-  rating: number;
-  fen: string;
-  solution: string[];
-  hint: string;
-  title: string;
-}
-
 export interface PersistedCurrentState {
   mode: GameMode;
-  view: "board" | "saved" | "recent" | "settings" | "puzzles";
+  view: "board" | "saved" | "recent" | "settings";
   initialFen: string;
   moves: string[];
   cursor: number;
@@ -75,8 +50,6 @@ export interface PersistedCurrentState {
   difficulty: Difficulty;
   whiteMs: number;
   blackMs: number;
-  puzzleIndex: number;
-  puzzleStreak: number;
 }
 
 export interface SavedGame extends SavedGameRecord {
@@ -86,8 +59,8 @@ export interface SavedGame extends SavedGameRecord {
   orientation: Orientation;
   whiteMs: number;
   blackMs: number;
-  difficulty: Difficulty;
   computerColor: "w" | "b";
+  difficulty: Difficulty;
 }
 
 export interface WorkspaceState extends WorkspacePayload {
@@ -96,3 +69,10 @@ export interface WorkspaceState extends WorkspacePayload {
   recentGames: SavedGame[];
   settings: ChessSettings;
 }
+
+// Search depth per difficulty. Kept shallow so the computer responds fast.
+export const DIFFICULTY_DEPTH: Record<Difficulty, number> = {
+  easy: 1,
+  medium: 2,
+  hard: 3
+};

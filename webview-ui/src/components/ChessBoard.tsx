@@ -127,7 +127,6 @@ function SquareCell({
   isCheck: boolean;
 }) {
   const selectSquare = useChessStore((state) => state.selectSquare);
-  const clearSquare = useChessStore((state) => state.clearSquare);
   const theme = useChessStore((state) => state.settings.theme);
   const [{ isOver }, dropRef] = useDrop(
     () => ({
@@ -168,10 +167,6 @@ function SquareCell({
         backgroundColor: isLight ? colors.light : colors.dark
       }}
       onClick={() => selectSquare(square)}
-      onContextMenu={(event) => {
-        event.preventDefault();
-        clearSquare(square);
-      }}
       aria-label={square}
     >
       {showRank ? (
