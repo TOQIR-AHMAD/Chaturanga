@@ -5,6 +5,7 @@ import { ChessBoard } from "./components/ChessBoard";
 import { PromotionDialog } from "./components/PromotionDialog";
 import { playSound } from "./services/audio";
 import { createChess } from "./services/chess-core";
+import { searchBestMove } from "./services/search";
 import {
   listenToExtension,
   persistWorkspace,
@@ -31,6 +32,7 @@ export default function App() {
   const state = useChessStore();
   const derived = selectDerivedState(state);
   const workerRef = useRef<Worker | null>(null);
+  const fallbackBusyRef = useRef(false);
   const pendingRef = useRef<{ id: number; depth: number } | null>(null);
   const tickRef = useRef<number | null>(null);
   const lastMoveCount = useRef(0);
@@ -122,6 +124,19 @@ export default function App() {
       return;
     }
 
+    // A worker can load but still fail at runtime inside the webview (e.g. CSP
+    // or module-worker restrictions). Drop it so the main-thread engine takes
+    // over and computer mode keeps working.
+    workerRef.current.onerror = (error) => {
+      console.error("Chess engine worker crashed:", error);
+      workerRef.current?.terminate();
+      workerRef.current = null;
+      pendingRef.current = null;
+      const store = useChessStore.getState();
+      store.setThinking(false);
+      runFallbackEngine(store);
+    };
+
     workerRef.current.onmessage = (event: MessageEvent<WorkerResult>) => {
       const message = event.data;
       const pending = pendingRef.current;
@@ -165,10 +180,17 @@ export default function App() {
       !chess.isGameOver() &&
       chess.turn() === state.computerColor;
 
-    if (!worker || !computersTurn) {
+    if (!computersTurn) {
       if (useChessStore.getState().thinking) {
         useChessStore.getState().setThinking(false);
       }
+      return;
+    }
+
+    // No worker available — run the search on the main thread instead so
+    // computer mode still works.
+    if (!worker) {
+      runFallbackEngine(useChessStore.getState());
       return;
     }
 
@@ -241,6 +263,52 @@ export default function App() {
     }
     return `${derived.chess.turn() === "w" ? "White" : "Black"} to move`;
   }, [derived, state.whiteMs, state.blackMs, state.thinking]);
+
+  // Main-thread engine used when the Web Worker is unavailable. Depths are
+  // shallow (1-3), so a brief synchronous search is fine.
+  function runFallbackEngine(store: ReturnType<typeof useChessStore.getState>) {
+    if (fallbackBusyRef.current) {
+      return;
+    }
+    if (store.mode !== "computer" || store.cursor !== store.moves.length) {
+      return;
+    }
+    const chess = createChess(store.initialFen, store.moves, store.cursor);
+    if (chess.turn() !== store.computerColor || chess.isGameOver()) {
+      return;
+    }
+
+    fallbackBusyRef.current = true;
+    store.setThinking(true);
+
+    // Defer so the human's move paints before the (blocking) search runs.
+    window.setTimeout(() => {
+      try {
+        const current = useChessStore.getState();
+        if (
+          current.mode !== "computer" ||
+          current.cursor !== current.moves.length
+        ) {
+          return;
+        }
+        const live = createChess(current.initialFen, current.moves, current.cursor);
+        if (live.turn() !== current.computerColor || live.isGameOver()) {
+          return;
+        }
+        const bestMove = searchBestMove(live.fen(), DIFFICULTY_DEPTH[current.difficulty]);
+        if (bestMove) {
+          current.playMove(
+            bestMove.slice(0, 2),
+            bestMove.slice(2, 4),
+            (bestMove[4] as "q" | "r" | "b" | "n" | undefined) ?? undefined
+          );
+        }
+      } finally {
+        fallbackBusyRef.current = false;
+        useChessStore.getState().setThinking(false);
+      }
+    }, 30);
+  }
 
   function handleExtensionMessage(message: ExtensionToWebviewMessage) {
     if (message.type === "hydrate") {
