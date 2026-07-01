@@ -1,16 +1,14 @@
 <div align="center">
 
-<img src="media/icon.png" alt="Chaturanga" width="120" />
+<img src="media/screenshots/classic.png" alt="Chaturanga chess board in VS Code" width="560" />
 
 # Chaturanga
 
 **Play chess in VS Code — against a friend or an offline computer opponent.**
 
-[![Version](https://img.shields.io/visual-studio-marketplace/v/ToqirAhmad.chaturanga?label=Marketplace&color=81b64c)](https://marketplace.visualstudio.com/items?itemName=ToqirAhmad.chaturanga)
-[![Installs](https://img.shields.io/visual-studio-marketplace/i/ToqirAhmad.chaturanga?color=81b64c)](https://marketplace.visualstudio.com/items?itemName=ToqirAhmad.chaturanga)
-[![Downloads](https://img.shields.io/visual-studio-marketplace/d/ToqirAhmad.chaturanga?color=81b64c)](https://marketplace.visualstudio.com/items?itemName=ToqirAhmad.chaturanga)
-[![Rating](https://img.shields.io/visual-studio-marketplace/r/ToqirAhmad.chaturanga?color=81b64c)](https://marketplace.visualstudio.com/items?itemName=ToqirAhmad.chaturanga&ssr=false#review-details)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![VS Marketplace](https://img.shields.io/badge/VS%20Marketplace-Chaturanga-81b64c?logo=visualstudiocode&logoColor=white)](https://marketplace.visualstudio.com/items?itemName=ToqirAhmad.chaturanga)
+[![Rate it](https://img.shields.io/badge/★★★★★-Rate%20it-81b64c)](https://marketplace.visualstudio.com/items?itemName=ToqirAhmad.chaturanga&ssr=false#review-details)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue)](https://opensource.org/licenses/MIT)
 
 A full chess board right inside your editor — real Staunton pieces, multiple themes, and a fast offline opponent. No account, no network, no distractions.
 
@@ -62,12 +60,6 @@ Set your defaults in **Settings** (see [Settings](#settings)) or switch on the f
 ---
 
 ## Screenshots
-
-### ♟️ Classic Board
-
-Real Staunton pieces on the classic theme, with move highlights and coordinates.
-
-![Classic board](media/screenshots/classic.png)
 
 ### 🤖 Play the Computer
 
@@ -155,48 +147,6 @@ Active while the chess board panel is focused:
 | --- | --- | --- |
 | `chess.defaultTheme` | `classic` | `classic`, `green`, `blue`, `dark`, `purple` |
 | `chess.defaultPieceSet` | `classic` | `classic`, `neo`, `alpha`, `wood` |
-
----
-
-## FAQ
-
-**Does it work offline?**
-Yes — Chaturanga is fully offline. There is no account, no sign-in, and nothing leaves your machine.
-
-**How strong is the computer?**
-It's tuned for a fast, casual game rather than tournament strength. Pick **Hard** for a tougher opponent.
-
-**Can I save and resume games?**
-Yes. Games are saved locally and can be resumed later. You can also import / export **PGN** and copy / paste **FEN**.
-
-**Is there online / multiplayer play?**
-No. Chaturanga is designed for local play — against a friend on the same board or against the computer.
-
-**How do I request a feature or report a bug?**
-Open an issue on the [GitHub repository](https://github.com/TOQIR-AHMAD/Chaturanga).
-
----
-
-## Contributing & Development
-
-Chaturanga is a VS Code extension with a React (Vite) webview UI.
-
-```bash
-# install dependencies (root + webview)
-npm install
-npm --prefix webview-ui install
-
-# build everything (webview + extension)
-npm run build
-
-# develop with live rebuilds
-npm run dev
-
-# package a .vsix
-npm run package
-```
-
-Pull requests and issues are welcome on the [GitHub repository](https://github.com/TOQIR-AHMAD/Chaturanga).
 
 ---
 
